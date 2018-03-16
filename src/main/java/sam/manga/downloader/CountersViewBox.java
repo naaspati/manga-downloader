@@ -1,4 +1,4 @@
-package mangaDowloader;
+package sam.manga.downloader;
 
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ReadOnlyIntegerProperty;

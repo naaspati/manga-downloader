@@ -1,4 +1,4 @@
-package mangaDowloader;
+package sam.manga.downloader;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -18,7 +18,7 @@ class DownloadablePage {
 	//final int CHAPTER_ID;
 	final String IMAGE_URL;
 	final String PAGE_URL;
-	private DownloadStatus downloadStatus;
+	private Status status;
 	private String error; 
 
 	DownloadablePage(ResultSet rs) throws SQLException, IllegalArgumentException{
@@ -27,9 +27,9 @@ class DownloadablePage {
 		PAGE_URL = rs.getString("page_url");
 		//CHAPTER_ID = rs.getInt("chapter_id");
 		IMAGE_URL = rs.getString("url"); 
-		downloadStatus = DownloadStatus.valueOf(rs.getString("status"));
+		status = Status.valueOf(rs.getString("status"));
 
-		if(downloadStatus.isFailed() || downloadStatus.isHalted())
+		if(status.isFailed() || status.isHalted())
 			error = rs.getString("errors");
 	}
 	/**
@@ -46,15 +46,15 @@ class DownloadablePage {
 	 * @return
 	 */
 	boolean downloadPage(Path chapterSavePath) {
-		if(downloadStatus.isCompleted())
+		if(status.isCompleted())
 			return true;
 
-		if(downloadStatus.isHalted())
+		if(status.isHalted())
 			return false;
 
 		if(IMAGE_URL == null){
 			error = "Null Url";
-			downloadStatus = DownloadStatus.FAILED;
+			status = Status.FAILED;
 			return false;
 		}
 
@@ -85,7 +85,7 @@ class DownloadablePage {
 			else if(fileSize != conFileSize)
 				setHalted("file size ("+fileSize+")  != Content Length ("+conFileSize+") ");
 
-			if(downloadStatus == DownloadStatus.HALTED){
+			if(status == Status.HALTED){
 				Files.move(savePath, DownloaderApp.HALTED_IMAGE_DIR.resolve(String.valueOf(ID)), StandardCopyOption.REPLACE_EXISTING);
 				return false;
 			}
@@ -95,7 +95,7 @@ class DownloadablePage {
 				return true;
 			}
 		} catch (IOException | NullPointerException e) {
-			downloadStatus = DownloadStatus.FAILED;
+			status = Status.FAILED;
 
 			try {
 				Files.deleteIfExists(savePath);
@@ -113,17 +113,17 @@ class DownloadablePage {
 	}
 	void setCompleted() {
 		error = null;
-		downloadStatus = DownloadStatus.COMPLETED;
+		status = Status.COMPLETED;
 	}
 	private void setHalted(String error) {
 		this.error = error;
-		downloadStatus = DownloadStatus.HALTED;
+		status = Status.HALTED;
 	}
-	DownloadStatus getDownloadStatus() {
-		return downloadStatus;
+	Status getDownloadStatus() {
+		return status;
 	}
 	boolean hasError(){
-		return downloadStatus != DownloadStatus.COMPLETED && error != null;
+		return status != Status.COMPLETED && error != null;
 	}
 	@Override
 	public String toString() {
@@ -133,7 +133,7 @@ class DownloadablePage {
 		.append(", order: ")
 		.append(ORDER)
 		.append(", status: ")
-		.append(downloadStatus)
+		.append(status)
 		.append(", url: ")
 		.append(IMAGE_URL)
 		.append("]");
@@ -141,7 +141,7 @@ class DownloadablePage {
 	}
 	//"UPDATE Pages SET status = ?, errors = ? WHERE id = ?"
 	public void databaseCommit(PreparedStatement resetPage) throws SQLException {
-		resetPage.setString(1, downloadStatus.toString());
+		resetPage.setString(1, status.toString());
 		resetPage.setString(2, error);
 		resetPage.setInt(3, ID);
 		resetPage.addBatch();

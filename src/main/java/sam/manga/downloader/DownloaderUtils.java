@@ -1,9 +1,10 @@
-package mangaDowloader;
+package sam.manga.downloader;
 
 import static sam.fx.alert.FxAlert.showErrorDialog;
 import static sam.fx.alert.FxAlert.showMessageDialog;
 import static sam.fx.popup.FxPopupShop.showHidePopup;
-import static mangaDowloader.DownloaderApp.*; 
+import static sam.manga.downloader.DownloaderApp.MANGAROCK_INPUT_DB;
+import static sam.manga.downloader.DownloaderApp.MANGAROCK_INPUT_FOLDER;
 
 import java.io.File;
 import java.io.IOException;
@@ -13,7 +14,6 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -41,8 +41,9 @@ import javafx.scene.text.Text;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
-import mangaDowloader.DownloadableManga.DownloadableMangaPresenter;
 import sam.fx.alert.FxAlert;
+import sam.manga.downloader.db.DbManager;
+import sam.manga.downloader.parts.Chapter;
 //
 public interface DownloaderUtils {
 	public static Object[] getLoggerStage(boolean addProgressBar){
@@ -70,8 +71,8 @@ public interface DownloaderUtils {
 	 * this method converts mangafox.db or mangaHere.db to mangarock.db
 	 * @param file 
 	 */
-	static boolean createMangarockDatabase(File dbFile){
-		Path mangafox = dbFile.toPath();
+	static boolean createMangarockDatabase(DbManager db){
+		Path mangafox = db.getDbFile().toPath();
 
 		String header = "Create Mangarock Database";
 
@@ -90,39 +91,9 @@ public interface DownloaderUtils {
 			return false;
 		}
 
-		try (Connection cMangafox = DriverManager.getConnection(JDBC.PREFIX+dbFile);
-				Connection cMangarock = DriverManager.getConnection(JDBC.PREFIX+MANGAROCK_INPUT_DB);
-				PreparedStatement p_mangarock = cMangarock.prepareStatement("INSERT INTO DownloadTask(chapter_name, dir_name, chapter_id, manga_id, source_id) VALUES(?,?,?,?,?)");
-				) {
-			cMangafox.setAutoCommit(false);
-			cMangarock.setAutoCommit(false);
-
-			Statement stmntTemp = cMangarock.createStatement();
-			stmntTemp.executeUpdate("DELETE FROM DownloadTask");
-			stmntTemp.close();
-
-			stmntTemp = cMangafox.createStatement();
-			ResultSet rsChaps = stmntTemp.executeQuery("SELECT id, manga_id, number, title, page_count FROM Chapters");
-
-			while(rsChaps.next()){
-				String chapter_id = rsChaps.getString("id");
-				String manga_id = rsChaps.getString("manga_id");
-
-				p_mangarock.setString(1, DownloadableMangaPresenter.generateChapterName(rsChaps.getString("number"), rsChaps.getString("title")));
-				p_mangarock.setString(2, "custom/mangarock/folder/"+chapter_id);
-				p_mangarock.setString(3, chapter_id);
-				p_mangarock.setString(4, manga_id);
-				p_mangarock.setString(5, rsChaps.getString("page_count"));
-				p_mangarock.addBatch();
-			}
-
-			stmntTemp.close();
-			rsChaps.close();
-
-			p_mangarock.executeBatch();
-			cMangarock.commit();
-		}
-		catch (SQLException|NumberFormatException e) {
+		try {
+			db.createMangarockDatabase();
+		} catch (Exception e) {
 			showErrorDialog("sql Error while creating mangarock.db", header, e);
 			return false;
 		}
@@ -246,10 +217,10 @@ public interface DownloaderUtils {
 			logText.appendText(String.format(format, haltedText.replace("Halted", "Result"), "manga_id", "chapter_id", "Reason")+"\n\n");
 
 			while(rs.next()){
-				String chapter_id = rs.getString("chapter_id");
-				String manga_id = rs.getString("manga_id");
+				int chapter_id = rs.getInt("chapter_id");
+				int manga_id = rs.getInt("manga_id");
 				int page_count = rs.getInt("source_id");
-				Path src = DownloadableChapter.generateChapterSavePath(manga_id, chapter_id);
+				Path src = Chapter.generateChapterSavePath(manga_id, chapter_id);
 
 				if(Files.notExists(src))
 					continue;
@@ -260,7 +231,7 @@ public interface DownloaderUtils {
 
 				if(foundCount == page_count){
 					try {
-						Path target = MANGAROCK_INPUT_FOLDER.resolve(chapter_id);
+						Path target = MANGAROCK_INPUT_FOLDER.resolve(String.valueOf(chapter_id));
 						if(Files.notExists(target)){
 							Files.move(src, target, StandardCopyOption.REPLACE_EXISTING);
 							success++;

@@ -1,4 +1,4 @@
-package mangaDowloader;
+package sam.manga.downloader;
 
 import java.io.IOException;
 import java.nio.file.Files;
