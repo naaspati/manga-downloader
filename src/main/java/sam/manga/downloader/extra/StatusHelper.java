@@ -1,52 +1,56 @@
 package sam.manga.downloader.extra;
 
-import static sam.manga.downloader.extra.Status.*;
-
-import sam.manga.downloader.extra.Status;
+import static sam.manga.downloader.extra.Status.ALL_CHAPTERS_COMPLETED;
+import static sam.manga.downloader.extra.Status.COMPLETED;
+import static sam.manga.downloader.extra.Status.FAILED;
+import static sam.manga.downloader.extra.Status.HALTED;
+import static sam.manga.downloader.extra.Status.QUEUED;
+import static sam.manga.downloader.extra.Status.RUNNING;
+import static sam.manga.downloader.extra.Status.UNTOUCHED;
 
 public interface StatusHelper {
-    public Status getStatus();
-    public void setStatus(Status status);
+    Status getStatus();
+    void setStatus(Status status);
     
-    public default boolean isAllChaptersCompleted() {
+    default boolean isAllChaptersCompleted() {
         return getStatus() == ALL_CHAPTERS_COMPLETED;
     }
     
-    public default boolean isCompleted() {
+    default boolean isCompleted() {
         return getStatus() == COMPLETED;
     }
-    public default boolean isFailed() {
+    default boolean isFailed() {
         return getStatus() == FAILED;
     }
-    public default boolean isQueued() {
+    default boolean isQueued() {
         return getStatus() == QUEUED;
     }
-    public default boolean isUntouched() {
+    default boolean isUntouched() {
         return getStatus() == UNTOUCHED;
     }
-    public default boolean isHalted() {
+    default boolean isHalted() {
         return getStatus() == HALTED;
     }
-    public default void setCompleted() {
+    default void setCompleted() {
         setStatus( COMPLETED);
     }
-    public default void setFailed() {
+    default void setFailed() {
         setStatus( FAILED);
     }
-    public default void setQueued() {
+    default void setQueued() {
         setStatus( QUEUED);
     }
-    public default void setUntouched() {
+    default void setUntouched() {
         setStatus( UNTOUCHED);
     }
-    public default void setHalted() {
+    default void setHalted() {
         setStatus( HALTED);
     }
     
-    public default void setRunning() {
+    default void setRunning() {
         setStatus( RUNNING);
     }
-    public default boolean isRunning() {
+    default boolean isRunning() {
         return getStatus() == RUNNING;
     }
 }

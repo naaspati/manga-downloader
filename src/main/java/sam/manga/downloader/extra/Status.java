@@ -9,7 +9,7 @@ public enum Status{
 	HALTED,
 	ALL_CHAPTERS_COMPLETED;
 	
-	private final String classString;
+	final String classString;
 	private Status() {
 		classString = toString().toLowerCase();
 	}
@@ -20,4 +20,10 @@ public enum Status{
 	public String getClassName() {
 		return classString;
 	}
+	
+	public static Status parse(String s) {
+        if(s == null)
+            return null;
+        return Status.valueOf(s);
+    }
 }
