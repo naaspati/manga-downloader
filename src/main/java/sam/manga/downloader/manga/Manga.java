@@ -38,7 +38,35 @@ public class Manga extends MangaBase<Chapter, Page> implements StatusHelper, Ite
         
         chapters.add(c);
     }
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
+        builder.append("Manga [");
+        if (status != null) {
+            builder.append("status=");
+            builder.append(status);
+            builder.append(", ");
+        }
+        builder.append("id=");
+        builder.append(id);
+        builder.append(", ");
+        if (mangaName != null) {
+            builder.append("mangaName=");
+            builder.append(mangaName);
+            builder.append(", ");
+        }
+        if (url != null) {
+            builder.append("url=");
+            builder.append(url);
+        }
+        builder.append("]");
+        return builder.toString();
+    }
 
+    @Override
+    public Chapter newChapter(double number, String volume, String title, String url) {
+        return new Chapter(id, volume, number, url, title);
+    }
     /**
      * this check should be performed before add to selection listView so the name change can be reflected in List
      * @return 
@@ -75,9 +103,5 @@ public class Manga extends MangaBase<Chapter, Page> implements StatusHelper, Ite
         }
         return false;
     }
-
-    @Override
-    protected Chapter makeChapter(double number, String volume, String title, String url) {
-        return new Chapter(id, volume, number, url, title);
-    }
+    
 }

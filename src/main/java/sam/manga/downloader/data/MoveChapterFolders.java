@@ -24,7 +24,7 @@ import java.util.stream.Stream;
 
 import javafx.scene.control.Alert.AlertType;
 import sam.fx.alert.FxAlert;
-import sam.manga.downloader.LoggerStage;
+import sam.manga.downloader.TextStage;
 import sam.manga.downloader.chapter.Chapter;
 import sam.sql.sqlite.SQLiteManeger;
 
@@ -33,14 +33,17 @@ public class MoveChapterFolders {
     private final String haltedText = "Halted";
     private final String failedText =   "Failed";
     
-    private LoggerStage logger;
     private int success = 0, failed = 0, halted = 0;
     private final String format = "%-20s%-12s%-15s%s\n";
 
     /**
      * this will move all chapter folder in manga folder of {@link #DOWNLOAD_DIR} which are listed in <b>mangarock.db</b> created by ->  {@link #createMangarockDatabase()}, and are completely downloaded (i.e. number of pages in folder == number of pages listed in {@link #DATABASE_FILE} -> Pages table to this chapter)
+     * @throws SQLException 
+     * @throws ClassNotFoundException 
+     * @throws IllegalAccessException 
+     * @throws InstantiationException 
      */
-    public MoveChapterFolders(){
+    public MoveChapterFolders() throws SQLException, InstantiationException, IllegalAccessException, ClassNotFoundException{
         if(Files.notExists(Paths.get(MANGAROCK_INPUT_DB))){
             FxAlert.showMessageDialog(stage(), AlertType.ERROR, "Mangarock database not found\n"+MANGAROCK_INPUT_DB, "Move Chapter Folders Failed", true);
             return;
@@ -70,34 +73,30 @@ public class MoveChapterFolders {
             return;
         }
         
-        logger = new LoggerStage(false, e -> e.consume());
-        logger.show();
-        logger.textArea.appendText("found chapter folders: "+chapterList.size()+"\n\n");
+            TextStage logger = TextStage.open();
+            logger.appendText("found chapter folders: "+chapterList.size()+"\n\n");
 
-        //MangaFox.Chapters.page_count = MangaRock.DownloadTask.source_id
-        try (SQLiteManeger c = new SQLiteManeger(MANGAROCK_INPUT_DB);) {
-            logger.textArea.appendText("S : files count should be\nF : files count found\n\n");
-            logger.textArea.appendText(String.format(format, haltedText.replace("Halted", "Result"), "manga_id", "chapter_id", "Reason")+"\n\n");
+            //MangaFox.Chapters.page_count = MangaRock.DownloadTask.source_id
+            try (SQLiteManeger c = new SQLiteManeger(MANGAROCK_INPUT_DB);) {
+                logger.appendText("S : files count should be\nF : files count found\n\n");
+                logger.appendText(String.format(format, haltedText.replace("Halted", "Result"), "manga_id", "chapter_id", "Reason")+"\n\n");
+                
+                c.iterate("SELECT chapter_id, manga_id, source_id FROM DownloadTask WHERE chapter_id IN"+chapterList.stream().map(File::getName).collect(Collectors.joining(",", "(", ")")), rs -> next(rs, logger));
+                
+                logger.appendText("success: "+success+"\r\nFailed: "+failed+"\r\nhalted: "+halted);
+            }
+
+            Stream.of(DOWNLOAD_DIR.toFile().listFiles()).forEach(f -> f.delete());
+            HALTED_IMAGE_DIR.toFile().delete();
+            DOWNLOAD_DIR.toFile().delete();
             
-            c.iterate("SELECT chapter_id, manga_id, source_id FROM DownloadTask WHERE chapter_id IN"+chapterList.stream().map(File::getName).collect(Collectors.joining(",", "(", ")")), this::next);
-            
-            logger.textArea.appendText("success: "+success+"\r\nFailed: "+failed+"\r\nhalted: "+halted);
-        }
-
-        catch (SQLException | InstantiationException | IllegalAccessException | ClassNotFoundException  e) {
-            showErrorDialog("Error while moveChapterFolders", "Move Chapter Folders Failed", e);
-            return;
-        }
-
-        Stream.of(DOWNLOAD_DIR.toFile().listFiles()).forEach(f -> f.delete());
-        HALTED_IMAGE_DIR.toFile().delete();
-        DOWNLOAD_DIR.toFile().delete();
+            logger.close();
+            showMessageDialog(null, "Move Chapter Folders Completed");
         
-        logger.setOnCloseRequest(null);
-        showMessageDialog(null, "Move Chapter Folders Completed");
+
     }
     
-    private void next(ResultSet rs) throws SQLException {
+    private void next(ResultSet rs, TextStage logger) throws SQLException {
         int chapter_id = rs.getInt("chapter_id");
         int manga_id = rs.getInt("manga_id");
         int page_count = rs.getInt("source_id");
@@ -118,18 +117,18 @@ public class MoveChapterFolders {
                     success++;
                 }
                 else{
-                    logger.textArea.appendText(String.format(format, haltedText, manga_id, chapter_id, "target already exits"));
+                    logger.appendText(String.format(format, haltedText, manga_id, chapter_id, "target already exits"));
                     halted++;
                 }
             } catch (IOException e) {
-                logger.textArea.appendText(String.format(format, failedText, manga_id, chapter_id, e+""));
+                logger.appendText(String.format(format, failedText, manga_id, chapter_id, e+""));
                 failed++;
             }
         }
         else{
             Arrays.sort(fileNames);
             String missings = IntStream.range(0, page_count).mapToObj(String::valueOf).filter(s -> Arrays.binarySearch(fileNames, s) < 0).collect(Collectors.joining(", ", "  ( missing: ", " )"));
-            logger.textArea.appendText(String.format(format, haltedText, manga_id, chapter_id, "S: "+(page_count < 10 ?"0":"")+page_count+" | F: "+(foundCount < 10 ?"0":"")+foundCount+missings));
+            logger.appendText(String.format(format, haltedText, manga_id, chapter_id, "S: "+(page_count < 10 ?"0":"")+page_count+" | F: "+(foundCount < 10 ?"0":"")+foundCount+missings));
             halted++;
         }
     }

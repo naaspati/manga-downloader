@@ -1,0 +1,13 @@
+
+#west-panel {
+	-fx-background-color:black;
+	-fx-padding:2;
+	-fx-border-color:white;
+	-fx-border-style:solid;
+	-fx-border-width:0.5;
+}
+#download-button{
+	-fx-background-color:linear-gradient(to bottom, #C7633E, coral, #C7633E);
+	-fx-text-fill:linear-gradient(to bottom, white, #FFF0F5);
+	-fx-font-weight:bold;
+}

@@ -1,8 +1,6 @@
 package sam.manga.downloader.data;
 
 import static sam.config.MyConfig.MANGAROCK_INPUT_DB;
-import static sam.fx.alert.FxAlert.showErrorDialog;
-import static sam.fx.alert.FxAlert.showMessageDialog;
 import static sam.manga.downloader.extra.Utils.path;
 
 import java.io.IOException;
@@ -15,45 +13,48 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 
-import javafx.scene.control.Alert.AlertType;
 import sam.manga.downloader.chapter.Chapter;
 import sam.sql.sqlite.SQLiteManeger;
 
 public class CreateMangarockDatabase {
+    private final boolean moveFolders;
+    private final DataManager dataManager;
     
-    public boolean result(){
-        DataManager dataManager = DataManager.getInstance();
+    public CreateMangarockDatabase(boolean moveFolders, DataManager dataManager) {
+        this.moveFolders = moveFolders; 
+        this.dataManager = dataManager;
+    }
+    
+    public ProcessResult result(){
+        ProcessResult result = new ProcessResult(true, "Create Mangarock Database");
         
-        String header = "Create Mangarock Database";
+        try {
+            dataManager.commitDatabase();
+        } catch (InstantiationException | IllegalAccessException | ClassNotFoundException | IOException
+                | SQLException e1) {
+            return result.setErrorBody("failed to commit", e1);
+        }
 
-        if(Files.notExists(path(MANGAROCK_INPUT_DB))){
-            showMessageDialog(AlertType.ERROR, "output mangarock.db not found\n"+MANGAROCK_INPUT_DB, header, true);
-            return false;
-        }
-        if(Files.notExists(dataManager.dbFile)){
-            showMessageDialog(AlertType.ERROR, "input mangaFox.db not found\n"+dataManager.dbFile, header, true);
-            return false;
-        }
+        if(Files.notExists(path(MANGAROCK_INPUT_DB)))
+            return result.setErrorBody("output mangarock.db not found\n"+MANGAROCK_INPUT_DB);
         try {
             Files.copy(path(MANGAROCK_INPUT_DB), path(MANGAROCK_INPUT_DB).getParent().resolve(path(MANGAROCK_INPUT_DB).getFileName()+"_ "+LocalDateTime.now().format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM)).replace(':', ' ')), StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
-            showErrorDialog("Error while copying mangarock.db", header, e);
-            return false;
+            return result.setErrorBody("Error while copying mangarock.db", e);
         }
 
         try {
             result1();
+            if(moveFolders)
+                new MoveChapterFolders();
         } catch (Exception e) {
-            showErrorDialog("sql Error while creating mangarock.db", header, e);
-            return false;
+            return result.setErrorBody("sql Error while creating mangarock.db", e);
         }
-        showMessageDialog(null, "mangarock.db created");
-        return true;
+        return null;
     }
 
-    public boolean result1() throws SQLException, IOException, InstantiationException, IllegalAccessException, ClassNotFoundException {
+    private void result1() throws SQLException, IOException, InstantiationException, IllegalAccessException, ClassNotFoundException {
         Path mip = Paths.get(MANGAROCK_INPUT_DB);
-        DataManager dataManager = DataManager.getInstance();
 
         if(Files.notExists(mip))
             throw new IOException("output mangarock.db not found\n"+MANGAROCK_INPUT_DB);
@@ -90,6 +91,5 @@ public class CreateMangarockDatabase {
 
             output.commit();
         }
-        return true;
     }
 }

@@ -1,0 +1,151 @@
+package fxml
+
+import javafx.scene.layout.VBox
+import javafx.scene.layout.GridPane
+import javafx.scene.layout.BorderPane
+import javafx.scene.text.Text
+import javafx.scene.effect.Glow
+import javafx.scene.control.ListView
+import javafx.scene.control.Button
+import javafx.geometry.Pos
+
+dynamic component CountersViewBox styledwith 'westPane.css' {
+	BorderPane id westPane {
+		center : VBox {
+			spacing : 20,
+			children : [
+				GridPane {
+					hgap : 10,
+					children : [
+						Text {
+							text:"Session Data...",
+							styleClass : ["info-panel-header"],
+							effect : Glow,
+							static rowIndex : 0,
+							static columnIndex : 0, 
+							static columnSpan : const GridPane#REMAINING
+						},
+						Text {
+							text : "Manga Count",
+							styleClass : ['manga-count', 'counts'],
+							static rowIndex : 1,
+							static columnIndex : 0
+						},
+						Text id mangaCount {
+							text : "--",
+							styleClass : ['manga-count', 'counts'],
+							static rowIndex : 1,
+							static columnIndex : 1
+						},
+						Text {
+							styleClass : ['chapter-count', 'counts'],
+							text : "Chapter Count",
+							static rowIndex : 2,
+							static columnIndex : 0
+						},
+						Text id chapterCount {
+							styleClass : ['chapter-count', 'counts'],
+							text : "--",
+							static rowIndex : 2,
+							static columnIndex : 1
+						},
+						Text {
+							styleClass : ['page-count', 'counts'],
+							text : "Page Count",
+							static rowIndex : 3,
+							static columnIndex : 0
+						},
+						Text id pageCount {
+							styleClass : ['page-count', 'counts'],
+							text : "--",
+							static rowIndex : 3,
+							static columnIndex : 1
+						},
+						Text {
+							styleClass : ['separator', 'counts'],
+							static rowIndex : 4,
+							static columnIndex : 0
+						},
+						Text {
+							text : "Progress...",
+							styleClass : ['info-panel-header'],
+							effect : Glow,
+							static rowIndex : 5,
+							static columnIndex : 0
+						},
+						Text {
+                            styleClass : ['selected-count', 'counts'],
+                            text : "Selected Count",
+                            static rowIndex : 6,
+                            static columnIndex : 0
+                        },
+                        Text id selectedCount {
+                            styleClass : ['selected-count', 'counts'],
+                            text : "--",
+                            static rowIndex : 6,
+                            static columnIndex : 1
+                        },
+                            Text {
+                            styleClass : ['queued-count', 'counts'],
+                            text : "Queued Count",
+                            static rowIndex : 7,
+                            static columnIndex : 0
+                        },
+                        Text id queuedCount {
+                            styleClass : ['queued-count', 'counts'],
+                            text : "--",
+                            static rowIndex : 7,
+                            static columnIndex : 1
+                        },
+                            Text {
+                            styleClass : ['completed-count', 'counts'],
+                            text : "Completed Count",
+                            static rowIndex : 8,
+                            static columnIndex : 0
+                        },
+                        Text id completedCount {
+                            styleClass : ['completed-count', 'counts'],
+                            text : "--",
+                            static rowIndex : 8,
+                            static columnIndex : 1
+                        },
+                            Text {
+                            styleClass : ['failed-count', 'counts'],
+                            text : "Failed Count",
+                            static rowIndex : 9,
+                            static columnIndex : 0
+                        },
+                        Text id failedCount {
+                            styleClass : ['failed-count', 'counts'],
+                            text : "--",
+                            static rowIndex : 9,
+                            static columnIndex : 1
+                        },
+                            Text {
+                            styleClass : ['remaining-count', 'counts'],
+                            text : "Remaining Count",
+                            static rowIndex : 10,
+                            static columnIndex : 0
+                        },
+                        Text id remainingCount {
+                            styleClass : ['remaining-count', 'counts'],
+                            text : "--",
+                            static rowIndex : 10,
+                            static columnIndex : 1
+                        }
+					]
+				},
+				ListView id listView
+			]
+		},
+		bottom: Button id downloadButton { 
+			    text : "Start Download",
+				maxWidth : const Double#MAX_VALUE,
+				alignment : const Pos#CENTER,
+				disable : true
+		}
+		
+	
+	}
+	
+}

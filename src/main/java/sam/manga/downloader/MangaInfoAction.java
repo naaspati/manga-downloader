@@ -2,7 +2,7 @@ package sam.manga.downloader;
 
 import java.util.Formatter;
 
-import javafx.beans.property.ReadOnlyObjectProperty;
+import javafx.beans.binding.ObjectExpression;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -14,10 +14,10 @@ import sam.manga.downloader.manga.Manga;
 import sam.manga.downloader.manga.MangaPresenter;
 import sam.weak.WeakKeep;
 
-public class MangaInfoAction implements EventHandler<ActionEvent> {
-    private final ReadOnlyObjectProperty<MangaPresenter> currentManga;
+class MangaInfoAction implements EventHandler<ActionEvent> {
+    private final ObjectExpression<MangaPresenter> currentManga;
 
-    public MangaInfoAction(ReadOnlyObjectProperty<MangaPresenter> currentManga) {
+    public MangaInfoAction(ObjectExpression<MangaPresenter> currentManga) {
         this.currentManga = currentManga;
     }
 
@@ -43,9 +43,9 @@ public class MangaInfoAction implements EventHandler<ActionEvent> {
                         m.getUrl(),
                         m.getStatus(),
                         m.chaptersCount(),
-                        mp.queuedCountProperty().get(),
-                        mp.completedCountProperty().get(),
-                        mp.failedCountProperty().get()
+                        mp.getQueuedCount(),
+                        mp.getCompletedCount(),
+                        mp.getFailedCount()
                         ).toString();
 
         MangaInfoView stg = weakStg.get();
@@ -55,8 +55,7 @@ public class MangaInfoAction implements EventHandler<ActionEvent> {
     };
     
     public class MangaInfoView extends Stage {
-        @FXML
-        private TextArea ta;
+        @FXML private TextArea ta;
         
         public void set(String title, String content) {
             setTitle(title);
@@ -66,7 +65,7 @@ public class MangaInfoAction implements EventHandler<ActionEvent> {
         public MangaInfoView() {
             super(StageStyle.UTILITY);
             initOwner(Utils.stage());
-            Utils.fxmlLoad("MangaInfoView.fxml", this, this);
+            Utils.fxml(this);
         }
 
     }

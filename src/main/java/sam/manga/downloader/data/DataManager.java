@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -23,8 +24,6 @@ public class DataManager {
     final Path dbFile;
     private final  Logger logger = Logger.getLogger(getClass().getName());
     
-    private static volatile DataManager instance;
-    
     private final int minPageId, minChapId;
     private static final AtomicInteger chapterId = new AtomicInteger();
     private static final AtomicInteger pageId = new AtomicInteger();
@@ -37,26 +36,9 @@ public class DataManager {
         else 
             throw new IllegalArgumentException("unknown class: "+cls);
     }
-    public static DataManager getInstance() {
-        if(instance == null)
-            throw new IllegalStateException("not initiated");
-        return instance;
-    }
-    /**
-     * default initlizer, loaded its data from tsv(s)
-     * @throws InstantiationException
-     * @throws IllegalAccessException
-     * @throws ClassNotFoundException
-     * @throws SQLException
-     * @throws IOException
-     */
-    public static void init() throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException, IOException {
-        if(instance != null)
-            throw new IllegalStateException("already initiated");
-        instance = new DataManager();
-    }
     
-    private DataManager() throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException, IOException {
+    @SuppressWarnings("rawtypes")
+    public DataManager() throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException, IOException {
         dbFile = Utils.SESSION_DIR.resolve(Scrapper.URL_COLUMN+".db");
         
         if(Files.notExists(dbFile)) {
@@ -72,6 +54,8 @@ public class DataManager {
         
         chapterId.set(minChapId + 1);
         pageId.set(minPageId + 1);
+        if(mangas != null && mangas instanceof ArrayList)
+            ((ArrayList)mangas).trimToSize();
     }
     
     private List<Manga> load() throws InstantiationException, IllegalAccessException, ClassNotFoundException, IOException, SQLException {
@@ -113,8 +97,8 @@ public class DataManager {
  */
         }
     }
-    public static void stop() throws InstantiationException, IllegalAccessException, ClassNotFoundException, IOException, SQLException {
-        instance.commitDatabase();
+    public void stop() throws InstantiationException, IllegalAccessException, ClassNotFoundException, IOException, SQLException {
+        commitDatabase();
     }
     
     /** TODO

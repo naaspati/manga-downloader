@@ -1,0 +1,49 @@
+package fxml
+
+import javafx.scene.layout.BorderPane
+import javafx.scene.control.Accordion
+import javafx.scene.control.TitledPane
+import javafx.scene.layout.HBox
+import javafx.scene.control.Button
+import javafx.scene.control.Tooltip
+import sam.manga.downloader.chapter.ButtonIcon
+import javafx.scene.layout.VBox
+import javafx.scene.text.Text
+import sam.manga.downloader.chapter.FailedPageTable
+
+dynamic component ErrorPane {
+	Accordion {
+		panes : [
+			TitledPane id errorTitledPane{
+				text : "",
+				content : BorderPane {
+					top : VBox {
+						children : [
+							HBox {
+								children : [
+									Button id restartBtn {
+										tooltip : Tooltip { text : "Restart Download" },
+										styleClass : [ "no-style-btn" ],
+										graphic : ButtonIcon { imagePath : "refresh_icon" }
+									},
+									Button id openDirBtn {
+										tooltip : Tooltip { text : "Open Chapter Folder" },
+										styleClass : [ "no-style-btn" ],
+										graphic : ButtonIcon { imagePath : "open_dir_icon" }
+									},
+									Button id copyBtn {
+										tooltip : Tooltip { text : "Copy all text" },
+										styleClass : [ "no-style-btn" ],
+										graphic : ButtonIcon { imagePath : "copy_text_icon" }
+									}
+								]
+							},
+							Text id errorText
+						]
+					},
+					center : FailedPageTable id errorTable
+				}
+			}
+		]
+	}
+}

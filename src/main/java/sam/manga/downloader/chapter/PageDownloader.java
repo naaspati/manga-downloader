@@ -1,4 +1,4 @@
-package sam.manga.downloader.page;
+package sam.manga.downloader.chapter;
 
 import static sam.manga.downloader.extra.Status.COMPLETED;
 import static sam.manga.downloader.extra.Status.FAILED;
@@ -7,23 +7,22 @@ import static sam.manga.downloader.extra.Status.HALTED;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
-import java.util.concurrent.LinkedBlockingQueue;
 
 import sam.manga.downloader.BytesCounter;
-import sam.manga.downloader.chapter.Chapter;
 import sam.manga.downloader.extra.Status;
 import sam.manga.downloader.extra.Utils;
+import sam.manga.downloader.page.Page;
 import sam.myutils.MyUtils;
+import sam.weak.WeakStore;
 
 public class PageDownloader implements Runnable {
-    private static final LinkedBlockingQueue<WeakReference<byte[]>> buffers = new LinkedBlockingQueue<>(); 
+    private static final WeakStore<byte[]> buffers = new WeakStore<>(() -> new byte[8*1024], true); 
 
     /**
      * 2 min
@@ -38,7 +37,6 @@ public class PageDownloader implements Runnable {
      * @param tryWithAltUrl
      * @return
      */
-
     private final Page page;
     private final Chapter chapter;
 
@@ -72,7 +70,7 @@ public class PageDownloader implements Runnable {
 
             long length = con.getContentLengthLong();
 
-            byte[] buffer = getBuffer();
+            byte[] buffer = buffers.poll();
             int nread = 0;
 
             try(InputStream is = con.getInputStream();
@@ -83,7 +81,7 @@ public class PageDownloader implements Runnable {
                     nread += n;
                 }
             } finally {
-                buffers.offer(new WeakReference<byte[]>(buffer));
+                buffers.add(buffer);
             } 
 
             if(nread < 1000L)
@@ -113,15 +111,6 @@ public class PageDownloader implements Runnable {
         con.setConnectTimeout(CONNECTION_TIMEOUT);
         con.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/28.0.1500.29 Safari/537.36");
         return con;
-    }
-    private byte[] getBuffer() {
-        WeakReference<byte[]> w;
-        while((w = buffers.poll()) != null) {
-            byte[] b = w.get();
-            if(b != null)
-                return b;
-        }
-        return new byte[256*1024];
     }
     private void setStatus(String error, Status status) {
         page.setError(error);

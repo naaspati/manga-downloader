@@ -1,13 +1,13 @@
 package sam.manga.downloader.data;
 
-import static sam.manga.downloader.data.ChapterMeta.STATUS;
+import static sam.manga.downloader.data.PageMeta.CHAPTER_ID;
 import static sam.manga.downloader.data.PageMeta.ERRORS;
 import static sam.manga.downloader.data.PageMeta.IMAGE_URL;
 import static sam.manga.downloader.data.PageMeta.ORDER;
 import static sam.manga.downloader.data.PageMeta.PAGE_ID;
 import static sam.manga.downloader.data.PageMeta.PAGE_URL;
+import static sam.manga.downloader.data.PageMeta.STATUS;
 import static sam.manga.downloader.data.PageMeta.TABLE_NAME;
-import static sam.manga.newsamrock.chapters.ChaptersMeta.CHAPTER_ID;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;

@@ -1,0 +1,126 @@
+
+.downloadable-chapter.v-box {
+	-fx-padding:5;
+	-fx-font: 13 Consolas;
+	-fx-background-color:floralwhite;
+}
+.titled-pane > .title {
+	-fx-font-family: 'Consolas';
+	-fx-font-weight:bold;
+	-fx-background-color:#FFE1D5;
+}
+.progress-bar.downloadable-chapter.failed{
+	-fx-accent:tomato;
+}
+.progress-bar.downloadable-chapter.completed{
+	-fx-accent:mediumseagreen;
+}
+
+/* DownloadStatus to class Strings
+started
+completed
+queued
+untouched
+failed
+halted
+all_chapters_completed
+*/
+
+.progress-bar > .bar {
+    -fx-background-insets: 2 2 3 2;
+    -fx-padding: .3em;
+}
+.downloadable-manga.manga-name-text, .downloadable-manga.manga-counts-text  {
+	-fx-font-family: 'Consolas';
+	-fx-fill:white;
+	-fx-text-fill:white;
+	-fx-font-weight:bold;
+	-fx-fill:white;
+}
+.downloadable-manga.manga-counts-text {
+	-fx-font-size:10;
+}
+.downloadable-manga.manga-control-box.running , 
+.label.running {
+	-fx-border-color: greenyellow;
+	-fx-border-opacity: 0.5;
+	-fx-border-width: 0 0 0 7;
+	-fx-border-style: solid;
+}
+.downloadable-manga.manga-control-box.completed, 
+.label.completed{
+	-fx-border-color: limegreen;
+	-fx-border-width: 0 0 0 7;
+	-fx-border-style: solid;
+}
+.downloadable-manga.manga-control-box.queued, .label.queued {
+	-fx-border-color: deepskyblue;
+	-fx-border-width: 0 0 0 7;
+	-fx-border-style: solid;
+}
+.downloadable-manga.manga-control-box.failed, .label.failed {
+	-fx-border-color: crimson;
+	-fx-border-width: 0 0 0 7;
+	-fx-border-style: solid;
+}
+
+.downloadable-manga.manga-control-box.manga-box-clicked{
+	-fx-background-color:linear-gradient(to bottom right, #595959, black, #595959);
+}
+.downloadable-manga.manga-control-box {
+	-fx-background-color:linear-gradient(to bottom,  #577899 10%, lightslategray, #577899  10%);
+	-fx-padding:5;
+}
+#selected-count-text{
+	-fx-fill:yellow;
+}
+#completed-count-text{
+	-fx-fill:limegreen;
+}
+#queued-count-text{
+	-fx-fill: deepskyblue;
+}
+#remaining-count-text{
+	-fx-fill: cyan;
+}
+#failed-count-text{
+	-fx-fill: crimson;
+}
+#session-data-text{
+	-fx-fill: white;
+	-font-weight:bold;
+}
+.info-panel-box {
+	-fx-fill:white;
+	-fx-text-fill:white;
+	-fx-font-weight:bold;
+	-fx-padding:10;
+}
+.info-panel-header{
+	-fx-font: 18 'AR CENA' ;
+	-fx-fill:papayawhip;
+	-fx-text-fill:papayawhip;
+}
+
+#help-box {
+	-fx-background-color:black;
+}
+
+#version-label{
+	-fx-font-size:25;
+}
+
+.manga-details.v-box {
+	-fx-background-color:black;
+	-fx-padding:10 20 10 20;
+}
+
+.manga-details.text-label  {
+	-fx-font: 20 'Waltograph UI';
+	-fx-fill:white;
+}
+.no-style-button{
+    -fx-background-color:transparent;
+    -fx-padding:0;
+    -fx-margin:0;
+}

@@ -5,7 +5,7 @@ import sam.manga.newsamrock.chapters.ChaptersMeta;
 interface ChapterMeta extends  ChaptersMeta {
     final String  URL = "url";
     final String  PAGE_COUNT = "page_count";
-    final String  STATUS = "status";
+    final String  STATE = "state";
     final String VOLUME = "volume";
     final String TITLE = "title";
     
@@ -19,5 +19,5 @@ interface ChapterMeta extends  ChaptersMeta {
                     "   `%s`   TEXT NOT NULL,"+
                     "   `%s`    INTEGER NOT NULL,"+
                     "   `%s`    TEXT NOT NULL DEFAULT 'UNTOUCHED'"+
-                    ");", TABLE_NAME, CHAPTER_ID, MANGA_ID, VOLUME, NUMBER, TITLE, URL, PAGE_COUNT, STATUS);
+                    ");", TABLE_NAME, CHAPTER_ID, MANGA_ID, VOLUME, NUMBER, TITLE, URL, PAGE_COUNT, STATE);
 }

@@ -5,16 +5,15 @@ import static sam.manga.downloader.extra.Utils.DOWNLOAD_DIR;
 import java.nio.file.Path;
 import java.util.Objects;
 
+import javafx.concurrent.Worker.State;
 import sam.manga.downloader.data.DataManager;
-import sam.manga.downloader.extra.Status;
-import sam.manga.downloader.extra.StatusHelper;
 import sam.manga.downloader.page.Page;
 import sam.manga.scrapper.units.ChapterBase;
 import sam.string.StringUtils;
 
-public class Chapter extends ChapterBase<Page> implements StatusHelper {
+public class Chapter extends ChapterBase<Page> {
     
-    private Status status;
+    private volatile State state;
     private boolean modified;
     
     private final Path savePath;
@@ -22,17 +21,26 @@ public class Chapter extends ChapterBase<Page> implements StatusHelper {
     private String title2;  
     
     public Chapter(int mangaId, String volume, double number, String url, String title) {
-        this(DataManager.newId(Chapter.class), mangaId, volume, number, url, title, Status.UNTOUCHED);
+        this(DataManager.newId(Chapter.class), mangaId, volume, number, url, title, null);
     }
-    public Chapter(int chapterId, int mangaId, String volume, double number, String url, String title, Status status) {
+    public Chapter(int chapterId, int mangaId, String volume, double number, String url, String title, State state) {
         super(mangaId, volume, number, title, url);
         
         this.title2 = title;
         this.chapterId = chapterId;
-        this.status = status;
+        this.state = state;
  
         savePath = generateChapterSavePath();
     }
+    
+    private String chapterName;
+    public String getChapterName() {
+        if(chapterName == null)
+            chapterName = getChapterName0();
+        
+        return chapterName;
+    }
+    
     /**
      * will create chapter name as MangaRock Converter will do for a chapter 
      * <br>
@@ -42,42 +50,37 @@ public class Chapter extends ChapterBase<Page> implements StatusHelper {
      * @param title2
      * @return
      */
-    public String getChapterName()  {
+    String getChapterName0()  {
         return StringUtils.doubleToString(number)+
                 ((title2 == null || title2.trim().isEmpty() || title2.trim().equals("null"))? "": " "+title2);
     }
     
-    public Path generateChapterSavePath(){
+    Path generateChapterSavePath(){
         return DOWNLOAD_DIR.resolve(String.valueOf(mangaId)).resolve(String.valueOf(chapterId));
     }
     public static Path generateChapterSavePath(int manga_id, int chapter_id){
         return DOWNLOAD_DIR.resolve(String.valueOf(manga_id)).resolve(String.valueOf(chapter_id));
     }
-    public boolean isModified() {
+    boolean isModified() {
         return modified;
     }
-    
-    @Override
-    public Status getStatus() {
-        return status;
+    State getState() {
+        return state;
     }
-    @Override
-    public void setStatus(Status status) {
-        if(this.status != status)
-            modified = true;
-        this.status = status;
+    void setState(State state) {
+        this.state = state;
     }
-    public Path getSavePath() {
+    Path getSavePath() {
         return savePath;
     }
-    public int getChapterId() {
+    int getChapterId() {
         return chapterId;
     }
     @Override
     public String getTitle() {
         return title2;
     }
-    public void setTitle(String title) {
+    void setTitle(String title) {
         Objects.requireNonNull(title, "title2 cannot be null");
         if(title.trim().isEmpty())
            throw new IllegalArgumentException("title2 cannot be empty string");
@@ -91,6 +94,7 @@ public class Chapter extends ChapterBase<Page> implements StatusHelper {
      * this will add {@link #volume} at the end of chapter {@link #title2}
      */
     public void applyVolumePatch() {
+        chapterName = getChapterName0();
         title2 = title2 == null  || title2.trim().isEmpty() ? volume : volume + " - "+ title2 ;
     }
     public static String generateChapterName(double number, String title2) {
@@ -102,7 +106,10 @@ public class Chapter extends ChapterBase<Page> implements StatusHelper {
         return Page.class;
     }
     @Override
-    protected Page newPage(int order, String pageUrl) {
+    public Page newPage(int order, String pageUrl) {
         return new Page(chapterId, order, pageUrl, null);
+    }
+    boolean isCompleted() {
+        return getState() == State.SUCCEEDED;
     }
 }

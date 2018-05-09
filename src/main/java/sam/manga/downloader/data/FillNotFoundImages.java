@@ -19,7 +19,7 @@ import javafx.scene.control.TextArea;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import sam.fx.alert.FxAlert;
-import sam.manga.downloader.LoggerStage;
+import sam.manga.downloader.TextStage;
 import sam.manga.downloader.extra.Utils;
 
 public class FillNotFoundImages {
@@ -54,28 +54,26 @@ public class FillNotFoundImages {
             return;
         }
         else {
-            LoggerStage logger = new LoggerStage(false, e -> e.consume());
-            logger.show();
-            TextArea logText = logger.textArea;
+            TextStage logger = TextStage.open();
             logger.setTitle("Fill not found Images");
-            
+
             int sucess = 0, total = 0;
             for (int i : ids) {
                 Path out = tempDir.resolve(i+".jpg");
                 try {
                     total++;
                     if(Files.exists(out))
-                        logText.appendText("alreay exits: "+out+"\n");
+                        logger.appendText("alreay exits: "+out+"\n");
                     else
                         Files.copy(inputStream, out);
                     sucess++;
                 } catch (IOException e1) {
-                    logText.appendText("Failed copy: "+out+"\n");
+                    logger.appendText("Failed copy: "+out+"\n");
                 }   
             }
+            logger.close();
             showMessageDialog("Total: "+total+"\nSuccess: "+sucess+"\nFailed: "+(total- sucess), "Fill Not Found Images Completed");
-            logger.setOnCloseRequest(null);
         }
     }
-    
+
 }

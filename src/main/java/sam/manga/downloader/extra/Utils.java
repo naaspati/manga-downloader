@@ -6,11 +6,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.BitSet;
+import java.util.EnumMap;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
+import java.util.logging.Logger;
 
 import javax.swing.BorderFactory;
 import javax.swing.JDialog;
@@ -19,7 +22,9 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 
 import javafx.application.HostServices;
+import javafx.concurrent.Worker.State;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.stage.Modality;
@@ -27,10 +32,11 @@ import javafx.stage.Stage;
 import sam.fileutils.FilesUtils;
 import sam.fx.alert.FxAlert;
 import sam.manga.downloader.scrapper.Scrapper;
+import sam.weak.WeakKeep;
 
 public final class Utils {
     private Utils() {}
-    private static volatile ExecutorService threadPool;
+    private final static Logger LOGGER = Logger.getGlobal();
 
     public static final Path SESSION_DIR;
     public static final Path HALTED_IMAGE_DIR;
@@ -85,9 +91,6 @@ public final class Utils {
 
     public static void stop() {
         try {
-            if(threadPool != null)
-                threadPool.shutdownNow();
-            
             Files.deleteIfExists(LOGS_DIR);
             Files.deleteIfExists(DOWNLOAD_DIR);
             Files.deleteIfExists(HALTED_IMAGE_DIR);
@@ -138,9 +141,11 @@ public final class Utils {
         return ClassLoader.getSystemResourceAsStream("imgs/"+imageName);
     }
 
-    public static void fxmlLoad(String filename, Object root, Object controller) {
+    private static final WeakKeep<FXMLLoader> fxkeep = new WeakKeep<>(FXMLLoader::new);
+    public static void fxml(String filename, Object root, Object controller) {
         try {
-            FXMLLoader fx = new FXMLLoader(ClassLoader.getSystemResource(filename));
+            FXMLLoader fx = fxkeep.get();
+            fx.setLocation(ClassLoader.getSystemResource(filename));
             fx.setController(controller);
             fx.setRoot(root);
             fx.load();
@@ -149,7 +154,12 @@ public final class Utils {
             System.exit(0);
         }
     }
-
+    public static void fxml(Object parentclass, Object root, Object controller) {
+        fxml("fxml/"+parentclass.getClass().getSimpleName()+".fxml", root, controller);
+    }
+    public static void fxml(Object obj) {
+        fxml(obj, obj, obj);
+    }
     public static void mustNoError(NoError callable) {
         try {
             callable.call();
@@ -171,5 +181,36 @@ public final class Utils {
     @FunctionalInterface
     public static interface NoError {
         public void call() throws Exception;
+    }
+
+    public static void showDocument(String url) {
+        hostServices.showDocument(url);
+    }
+    public static int sum(int[] data) {
+        int sum = 0;
+        for (int i : data) sum += i;
+        
+        return sum;
+    }
+    
+    public static void stylesheet(Parent node) {
+        String name = "stylesheet/"+node.getClass().getSimpleName()+".css"; 
+        URL url = ClassLoader.getSystemResource(name);
+        if(url == null) {
+            LOGGER.severe("stylesheet not found: "+name);
+            return;
+        }
+        node.getStylesheets().add(url.toExternalForm());
+    }
+    private static EnumMap<State, String> statemap = new EnumMap<>(State.class);
+    public static String styleClass(State s) {
+        String st = statemap.get(s);
+        if(st == null)
+            statemap.put(s, st = s.name().toLowerCase());
+        
+        return st;
+    }
+    public static State parse(String s) {
+        return s == null ? null : State.valueOf(s);
     }
 }

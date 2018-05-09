@@ -14,7 +14,6 @@ import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -49,15 +48,18 @@ import javafx.stage.DirectoryChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import sam.collection.UnmodifiableArray;
 import sam.config.Session;
 import sam.console.ANSI;
 import sam.manga.downloader.manga.MangaPresenter;
 import sam.myutils.MyUtils;
 
-public class MoveIncompletePages {
+class MoveIncompletePages {
 
-    public MoveIncompletePages(List<MangaPresenter> mangasList) {
+    public MoveIncompletePages() {
+        UnmodifiableArray<MangaPresenter> mangas = App.getMangasMangaPresenter();
         File initialFile;
+        
         if(Session.has("moveIncompletePages"))
             initialFile = new File(Session.get("moveIncompletePages"));
         else if(Files.exists(HALTED_IMAGE_DIR))
@@ -87,7 +89,7 @@ public class MoveIncompletePages {
         Map<Integer, File> folderContents = Stream.of(files).collect(Collectors.toMap(f -> Integer.parseInt(f.getName().replaceFirst("\\.jpe?g$",  "")), Function.identity(), (o, n) -> n));
 
         Map<Integer, Path> sink = new HashMap<>();
-        mangasList.forEach(m -> m.fillPageSavePaths(folderContents.keySet(), sink));
+        for (MangaPresenter m : mangas) m.fillPageSavePaths(folderContents.keySet(), sink);
 
         if(files.length == 0){
             showMessageDialog("no relative data found", "Move Failed", true);
@@ -120,39 +122,39 @@ public class MoveIncompletePages {
             return;
         }
 
-        LoggerStage logger = new LoggerStage(false, e -> e.consume());
-        ArrayList<File> successFiles = new ArrayList<>();
+            TextStage logger = TextStage.open();
+            ArrayList<File> successFiles = new ArrayList<>();
 
-        inOutMap.forEach((File in, Path out) -> {
-            try {
-                if(replaceConfirmation.containsKey(out)){
-                    if(replaceConfirmation.get(out)){
-                        Files.move(in.toPath(), out, StandardCopyOption.REPLACE_EXISTING);
-                        logger.textArea.appendText("Success -> in: "+in+"\tout: "+out+"\n");
+            inOutMap.forEach((File in, Path out) -> {
+                try {
+                    if(replaceConfirmation.containsKey(out)){
+                        if(replaceConfirmation.get(out)){
+                            Files.move(in.toPath(), out, StandardCopyOption.REPLACE_EXISTING);
+                            logger.appendText("Success -> in: "+in+"\tout: "+out+"\n");
+                            successFiles.add(in);
+                        }
+                        else
+                            logger.appendText("Refused by User -> in: "+in+"\tout: "+out+"\n");
+                    }
+                    else{
+                        Files.move(in.toPath(), out);
+                        logger.appendText("Success -> in: "+in+"\tout: "+out+"\n");
                         successFiles.add(in);
                     }
-                    else
-                        logger.textArea.appendText("Refused by User -> in: "+in+"\tout: "+out+"\n");
+                } catch (IOException e) {
+                    logger.appendText("\nin: "+in+"\nout: "+out+"\nError: "+e+"\n\n");
                 }
-                else{
-                    Files.move(in.toPath(), out);
-                    logger.textArea.appendText("Success -> in: "+in+"\tout: "+out+"\n");
-                    successFiles.add(in);
-                }
-            } catch (IOException e) {
-                logger.textArea.appendText("\nin: "+in+"\nout: "+out+"\nError: "+e+"\n\n");
-            }
-        });
+            });
+            
+            HashSet<Integer> successIds = new HashSet<>();
+            folderContents.forEach((id, f) -> {
+                if(successFiles.contains(f))
+                    successIds.add(id);
+            });
 
-        HashSet<Integer> successIds = new HashSet<>();
-        folderContents.forEach((id, f) -> {
-            if(successFiles.contains(f))
-                successIds.add(id);
-        });
-
-        mangasList.forEach(m -> m.updateIfHasPages(successIds));
-        logger.textArea.appendText(ANSI.createUnColoredBanner("Completed", 15, '#'));
-        logger.setOnCloseRequest(null);
+            mangas.forEach(m -> m.updateIfHasPages(successIds));
+            logger.appendText(ANSI.createUnColoredBanner("Completed", 15, '#'));
+            logger.close();
     }
 
     private final int CONFIRM_IMAGES_YES = 1;

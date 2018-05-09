@@ -1,0 +1,20 @@
+package fxml
+
+import javafx.scene.layout.BorderPane
+import javafx.stage.Stage
+import javafx.scene.Scene
+import javafx.scene.control.TextArea
+import javafx.scene.control.ProgressBar
+
+dynamic component TextStage {
+	Stage {
+		scene : Scene {
+			height : 500,
+			width : 500,
+			root: BorderPane {
+				center: TextArea id ta { editable : false},
+				bottom: ProgressBar id bar { maxWidth : const Double#MAX_VALUE }
+			}
+		}
+	}
+}

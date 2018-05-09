@@ -1,6 +1,6 @@
 package sam.manga.downloader.data;
 
-import static sam.manga.downloader.data.ChapterMeta.STATUS;
+import static sam.manga.downloader.data.ChapterMeta.STATE;
 import static sam.manga.downloader.data.ChapterMeta.TITLE;
 import static sam.manga.downloader.data.ChapterMeta.URL;
 import static sam.manga.downloader.data.ChapterMeta.VOLUME;
@@ -17,7 +17,7 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import sam.manga.downloader.chapter.Chapter;
-import sam.manga.downloader.extra.Status;
+import sam.manga.downloader.extra.Utils;
 import sam.manga.downloader.manga.Manga;
 import sam.sql.sqlite.SQLiteManeger;
 
@@ -34,7 +34,7 @@ class DbChapters {
                     rs.getDouble(NUMBER),
                     rs.getString(URL),
                     rs.getString(TITLE),
-                    Status.parse(rs.getString(STATUS)));
+                    Utils.parse(rs.getString(STATE)));
 
             if(current == null || current.id != c.mangaId)
                 current = map.get(c.mangaId);
@@ -63,6 +63,4 @@ class DbChapters {
             return ret;
         });
     }
-
-
 }

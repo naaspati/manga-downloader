@@ -1,10 +1,9 @@
 package sam.manga.downloader;
 
-import java.util.List;
 import java.util.function.Consumer;
 
-import javafx.beans.property.ReadOnlyIntegerProperty;
-import javafx.beans.property.ReadOnlyObjectProperty;
+import javafx.beans.binding.IntegerExpression;
+import javafx.beans.binding.ObjectExpression;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.control.Button;
@@ -16,24 +15,20 @@ import sam.fx.popup.FxPopupShop;
 import sam.manga.downloader.extra.Utils;
 import sam.manga.downloader.manga.MangaPresenter;
 
-public class ToolBar2 extends ToolBar {
-    private final List<MangaPresenter> mangasList;
-
-    public ToolBar2(List<MangaPresenter> mangasList, ReadOnlyObjectProperty<MangaPresenter> currentManga, ReadOnlyIntegerProperty failedCount) {
-        this.mangasList = mangasList;
-        
-        Button openWorkingDir = buttonMaker("Open Root Dir", e -> Utils.hostService().showDocument("."));
-        Button selectAll = buttonMaker("Select all", e -> mangaForEach(m -> m.setAllChapterSelected(true)));
-        Button unselectAll = buttonMaker("Unselect all", e -> mangaForEach(m -> m.setAllChapterSelected(false)));
+class ToolBar2 extends ToolBar {
+    
+    public ToolBar2(ObjectExpression<MangaPresenter> currentManga, IntegerExpression failedChaptersCountProperty, Consumer<Consumer<MangaPresenter>> forEachMangaPresenter) {
+        Button openWorkingDir = buttonMaker("Open Root Dir", e -> Utils.showDocument("."));
+        Button selectAll = buttonMaker("Select all", e -> forEachMangaPresenter.accept(m -> m.setAllChapterSelected(true)));
+        Button unselectAll = buttonMaker("Unselect all", e -> forEachMangaPresenter.accept(m -> m.setAllChapterSelected(false)));
         Button selectRange = buttonMaker("Select Range", e -> currentManga.get().selectRangeChapters());
 
         Button mangaInfo = buttonMaker("Current Manga Info", new MangaInfoAction(currentManga));
         mangaInfo.disableProperty().bind(currentManga.isNull());
         
         Button openErrorFile = buttonMaker("Open Error log", e -> FxPopupShop.showHidePopup("Not Working", 1500));
-        Button retry_failed = buttonMaker("Retry Failed", e -> mangasList.forEach(MangaPresenter::retryFailedChapters));
-        retry_failed.disableProperty().bind(failedCount.isEqualTo(0));
-        
+        Button retry_failed = buttonMaker("Retry Failed", e -> forEachMangaPresenter.accept(MangaPresenter::retryFailedChapters));
+        retry_failed.disableProperty().bind(failedChaptersCountProperty.isEqualTo(0));
 
         getItems().addAll(openWorkingDir,
                 selectAll,
@@ -42,9 +37,6 @@ public class ToolBar2 extends ToolBar {
                 mangaInfo,
                 openErrorFile,
                 retry_failed);
-    }
-    private void mangaForEach(Consumer<MangaPresenter> action) {
-        mangasList.forEach(action);
     }
 
     private Button buttonMaker(String label, EventHandler<ActionEvent> handler) {

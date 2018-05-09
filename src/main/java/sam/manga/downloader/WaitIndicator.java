@@ -9,7 +9,7 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
-public class WaitIndicator extends Stage {
+class WaitIndicator extends Stage {
     public WaitIndicator() {
         super(StageStyle.TRANSPARENT);
         initOwner(stage());
@@ -17,7 +17,7 @@ public class WaitIndicator extends Stage {
 
         ProgressIndicator indicator = new ProgressIndicator();
 
-        setScene(new Scene(indicator));;
+        setScene(new Scene(indicator));
 
         Platform.runLater(() -> {
             show();

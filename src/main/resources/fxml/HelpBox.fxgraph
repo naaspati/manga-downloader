@@ -1,0 +1,24 @@
+package fxml
+
+import javafx.scene.layout.VBox
+import javafx.scene.control.Label
+import javafx.scene.effect.Glow
+
+dynamic component HelpBox {
+	VBox {
+		spacing : 5,
+		children : [
+			Label id version {
+				^id : "version-label",
+				styleClass : [ "info-panel-header" ],
+				effect : Glow
+			},
+			Label,
+			Label {
+				text : "Borders Colors Means...",
+				styleClass : [ "info-panel-header" ],
+				effect : Glow
+			}
+		]
+	}
+}

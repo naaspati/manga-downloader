@@ -1,0 +1,30 @@
+package fxml
+
+import javafx.scene.layout.BorderPane
+import javafx.scene.control.ScrollPane
+import javafx.scene.layout.VBox
+import java.lang.Double
+import javafx.scene.layout.HBox
+import javafx.scene.control.Label
+import javafx.scene.control.ChoiceBox
+
+dynamic component MangaNamesBox {
+	BorderPane {
+		center : ScrollPane id scrollpane {
+			content : VBox id mangaContainer {
+				spacing : 1,
+				maxHeight : const Double#MAX_VALUE
+			},
+			fitToHeight : true,
+			maxHeight : const Double#MAX_VALUE
+		},
+		top: HBox {
+			spacing : 5,
+			children : [
+				Label{ text : "sort by: ", textFill : "WHITE" },
+				ChoiceBox id sortingChoices
+			]
+			
+		}
+	}
+}

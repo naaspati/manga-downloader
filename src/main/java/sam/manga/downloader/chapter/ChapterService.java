@@ -1,34 +1,22 @@
 package sam.manga.downloader.chapter;
 
-import static sam.manga.downloader.extra.Status.COMPLETED;
-import static sam.manga.downloader.extra.Status.FAILED;
+import static javafx.concurrent.Worker.State.SUCCEEDED;
 
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.stream.Stream;
+import java.util.BitSet;
 
-import javafx.application.Platform;
-import javafx.beans.property.ReadOnlyBooleanWrapper;
 import javafx.concurrent.Service;
 import javafx.concurrent.Task;
-import sam.manga.downloader.extra.Status;
 import sam.manga.downloader.page.Page;
-import sam.manga.downloader.page.PageDownloader;
 
-class ChapterService extends Service<Void> {
-    private volatile String directoryCreateFailedError;
+class ChapterService  extends Service<Void>  {
     private final Chapter chapter;
-    final ReadOnlyBooleanWrapper dataUpdated;
 
-    public ChapterService(Chapter chapter, ReadOnlyBooleanWrapper dataUpdated) {
+    public ChapterService(Chapter chapter) {
         this.chapter = chapter;
-        this.dataUpdated = dataUpdated;
     }
-
     @Override
     protected Task<Void> createTask() {
         return new Task<Void>() {
@@ -36,7 +24,7 @@ class ChapterService extends Service<Void> {
             public Void call() throws IOException {
                 final long total = chapter.size();
 
-                if(isChapterCompleted()){
+                if(chapter.getState() == SUCCEEDED){
                     updateProgress(total, total);
                     return null;
                 }
@@ -46,24 +34,20 @@ class ChapterService extends Service<Void> {
 
                 if(files != null && files.length == total){
                     updateProgress(total, total);
-                    setStatus(COMPLETED);
                     return null;
-                }
-                else if(files == null) {
-                    try {
-                        Files.createDirectories(chapSavePath);
-                    } catch (IOException e) {
-                        addCreateDirectoryError(e);
-                        updateProgress(0, total);
-                        setStatus(FAILED);
-                        return null;
-                    }
+                } else if(files == null) {
+                    Files.createDirectories(chapSavePath);
                 }
 
                 if(isCancelled())
                     return null;
 
-                int[] numbers = files == null ? null : Stream.of(files).mapToInt(Integer::parseInt).sorted().toArray();
+                BitSet b = new BitSet();
+
+                if(files != null) {
+                    for (String f : files)
+                        b.set(Integer.parseInt(f));
+                }
 
                 int progress = 0;
                 updateProgress(progress, total);
@@ -72,7 +56,7 @@ class ChapterService extends Service<Void> {
                     if(isCancelled())
                         return null;
 
-                    if(page.isCompleted() || (numbers != null && Arrays.binarySearch(numbers, page.getOrder()) >= 0)){
+                    if(page.isCompleted() || b.get(page.getOrder())){
                         updateProgress(++progress, total);
                         page.setCompleted();
                         continue;
@@ -85,48 +69,14 @@ class ChapterService extends Service<Void> {
                     if(page.isCompleted())
                         updateProgress(++progress, total);
                 }
+                if(progress != total)
+                    throw new InCompleteDownloadException();
 
-                setStatus(progress == total ? COMPLETED : FAILED);
                 return null;
-            }
-
-            private boolean isChapterCompleted() {
-                synchronized (chapter) {
-                    return chapter.isCompleted();   
-                }
             }
         };
     }
-    private void addCreateDirectoryError(Exception e) {
-        try(StringWriter sw = new StringWriter();
-                PrintWriter pw = new PrintWriter(sw);) {
-
-            pw.print("Failed, to create chapter_dir");
-            e.printStackTrace(pw);
-            directoryCreateFailedError = sw.toString();
-            chapter.setFailed();
-            setStatus(FAILED);
-        }
-        catch (IOException e2) {}
-    }
-    public String getDirectoryCreateFailedError() {
-        return directoryCreateFailedError;
-    }
-    public boolean hasError() {
-        return directoryCreateFailedError != null || chapter.stream().anyMatch(Page::hasError);
-    }
-
-    private void setStatus(Status status) {
-        synchronized (chapter) {
-            if(directoryCreateFailedError != null){
-                chapter.setFailed();
-                return;
-            }
-
-            if(status != chapter.getStatus())
-                Platform.runLater(() -> dataUpdated.set(true));
-
-            chapter.setStatus(status);
-        }
-    }
+    class InCompleteDownloadException extends IOException {
+        private static final long serialVersionUID = 9023123708082447243L;
+    } 
 }
