@@ -1,6 +1,9 @@
 package sam.manga.downloader;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.util.function.Consumer;
 
@@ -9,10 +12,12 @@ import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.scene.Parent;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.ToolBar;
+import sam.config.MyConfig;
 import sam.fx.alert.FxAlert;
 import sam.manga.downloader.data.CreateMangarockDatabase;
 import sam.manga.downloader.data.DataManager;
 import sam.manga.downloader.data.ProcessResult;
+import sam.manga.downloader.data.TsvMangaLoader;
 import sam.manga.downloader.manga.MangaPresenter;
 
 public class Provider {
@@ -48,7 +53,7 @@ public class Provider {
     private ToolBar toolBar2() {
         if(toolBar20 != null)
             return toolBar20;
-        
+
         return toolBar20 = new ToolBar2(westpane().currentMangaProperty(), failedChaptersCountProperty(), this::forEachMangaPresenter);
     }
 
@@ -68,8 +73,7 @@ public class Provider {
         if(toolsMenu0 != null)
             return toolsMenu0 ;
 
-        toolsMenu0 = new ToolsMenu(this::forEachMangaPresenter, westpane().downloadIsActiveProperty(), this::createMangarockDatabase); 
-        return null;
+        return  toolsMenu0 = new ToolsMenu(westpane().mangaPresenters(), westpane().downloadIsActiveProperty(), this::createMangarockDatabase); 
     }
 
     private void createMangarockDatabase(boolean moveFolders) {
@@ -82,7 +86,6 @@ public class Provider {
             .show();
         } 
     }
-
     private WestPane westpane() {
         if(westpane0 != null)
             return westpane0;
@@ -97,11 +100,25 @@ public class Provider {
             return dataManager0;
 
         try {
-            return dataManager0 = new DataManager();
+            return dataManager0 = new DataManager(tsvMangaLoader());
         } catch (InstantiationException | IllegalAccessException | ClassNotFoundException | SQLException
                 | IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public TsvMangaLoader tsvMangaLoader() throws IOException {
+        Path p1 = Paths.get(MyConfig.NEW_MANGAS_TSV_FILE);
+        Path p2 = Paths.get(MyConfig.UPDATED_MANGAS_TSV_FILE);
+
+        if(Files.exists(p1) && Files.exists(p2))
+            return new TsvMangaLoader(p1, p2);
+        if(Files.exists(p1))
+            return new TsvMangaLoader(p1);
+        if(Files.exists(p2))
+            return new TsvMangaLoader(p2);
+
+        return null;
     }
 
     public IntegerExpression failedChaptersCountProperty() {

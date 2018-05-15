@@ -16,7 +16,7 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import sam.fx.helpers.FxMenu;
-import sam.weak.WeakKeep;
+import sam.weak.LazyAndWeak;
 
 public class MenuBar2 extends MenuBar  {
     private final CheckMenuItem exitAfterCompleteCMI = new CheckMenuItem("Exit After complete");
@@ -38,7 +38,7 @@ public class MenuBar2 extends MenuBar  {
         getMenus().addAll(fileMenu, appMenu, toolsMenu);
     }
     
-    private WeakKeep<Stage> stage = new WeakKeep<>(() -> {
+    private LazyAndWeak<Stage> stage = new LazyAndWeak<>(() -> {
         Stage stage = new Stage(StageStyle.UTILITY);
         stage.initOwner(stage());
         stage.initModality(Modality.APPLICATION_MODAL);

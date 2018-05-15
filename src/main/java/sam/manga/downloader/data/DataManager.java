@@ -38,15 +38,14 @@ public class DataManager {
     }
     
     @SuppressWarnings("rawtypes")
-    public DataManager() throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException, IOException {
+    public DataManager(TsvMangaLoader tsvMangaLoader) throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException, IOException {
         dbFile = Utils.SESSION_DIR.resolve(Scrapper.URL_COLUMN+".db");
         
         if(Files.notExists(dbFile)) {
-            mangas = TsvMangaLoader.load();
+            mangas = tsvMangaLoader.load();
             minPageId = 0;
             minChapId = 0;
-        }
-        else {
+        } else {
             mangas = load();
             minPageId = mangas.stream().flatMap(Manga::stream).flatMap(Chapter::stream).mapToInt(p -> p.pageId).max().orElse(0);
             minChapId = mangas.stream().flatMap(Manga::stream).mapToInt(c -> c.chapterId).max().orElse(0);
@@ -84,7 +83,7 @@ public class DataManager {
     }
     public synchronized void commitDatabase() throws InstantiationException, IllegalAccessException, ClassNotFoundException, IOException, SQLException {
         try (SQLiteManeger db = new SQLiteManeger(dbFile)) {
-/**
+/** TODO
  *             for (MangaPresenter d : mangasList)
                 d.databaseCommit(generalStmnt, resetChapter, resetPage);
 

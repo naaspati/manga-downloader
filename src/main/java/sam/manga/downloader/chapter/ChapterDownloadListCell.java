@@ -165,12 +165,13 @@ public class ChapterDownloadListCell extends ListCell<ChapterPresenter>  {
         }
 
         @Override
-        public void selectionChange(boolean newValue) {
+        public void selectionChange(ChapterPresenter chapter, boolean newValue) {
             // TODO Auto-generated method stub
-
+            
         }
+
         @Override
-        public void chapterNameChange(String chapterName) {
+        public void chapterNameChange(ChapterPresenter chapter, String chapterName) {
             // TODO Auto-generated method stub
             
         }

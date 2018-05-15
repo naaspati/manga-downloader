@@ -3,6 +3,7 @@ package sam.manga.downloader;
 import static sam.fx.helpers.FxClassHelper.setClass;
 import static sam.fx.helpers.FxClassHelper.toggleClass;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -315,5 +316,9 @@ public class WestPane extends BorderPane {
             forEach(MangaPresenter::cancelAllDownload);
 
         forEach(m -> new SaveRecords(m)); // TODO
+    }
+
+    public List<MangaPresenter> mangaPresenters() {
+        return Collections.unmodifiableList(listView.getItems());
     }
 }

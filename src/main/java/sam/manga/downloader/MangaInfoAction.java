@@ -12,7 +12,7 @@ import javafx.stage.StageStyle;
 import sam.manga.downloader.extra.Utils;
 import sam.manga.downloader.manga.Manga;
 import sam.manga.downloader.manga.MangaPresenter;
-import sam.weak.WeakKeep;
+import sam.weak.LazyAndWeak;
 
 class MangaInfoAction implements EventHandler<ActionEvent> {
     private final ObjectExpression<MangaPresenter> currentManga;
@@ -21,12 +21,12 @@ class MangaInfoAction implements EventHandler<ActionEvent> {
         this.currentManga = currentManga;
     }
 
-    private WeakKeep<Object[]> weakFormatter = new WeakKeep<>(() -> {
+    private LazyAndWeak<Object[]> weakFormatter = new LazyAndWeak<>(() -> {
         StringBuilder sb = new StringBuilder();
         return new Object[] {sb, new Formatter(sb)};
     });
 
-    private WeakKeep<MangaInfoView> weakStg = new WeakKeep<>(MangaInfoView::new);
+    private LazyAndWeak<MangaInfoView> weakStg = new LazyAndWeak<>(MangaInfoView::new);
 
     @Override
     public void handle(ActionEvent event) {

@@ -6,10 +6,11 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.util.List;
 
-import sam.collection.UnmodifiableArray;
 import sam.fileutils.RemoveInValidCharFromString;
 import sam.fx.alert.FxAlert;
+import sam.manga.downloader.chapter.Chapter;
 import sam.manga.downloader.chapter.ChapterPresenter;
 import sam.manga.downloader.manga.Manga;
 import sam.manga.downloader.manga.MangaPresenter;
@@ -18,13 +19,13 @@ import sam.manga.downloader.page.Page;
 public class SaveRecords {
     private final StringBuilder sb = new StringBuilder();
     
-    public SaveRecords(UnmodifiableArray<MangaPresenter> mangas) {
+    public SaveRecords(List<MangaPresenter> mangas) {
         for (MangaPresenter m : mangas)
             manga(m);
     }
     
     private void manga(MangaPresenter mangaP) {
-        Path path  = LOGS_DIR.resolve(RemoveInValidCharFromString.removeInvalidCharsFromFileName(mangaP.getMangaName())+".npp");
+        Path path  = LOGS_DIR.resolve(RemoveInValidCharFromString.removeInvalidCharsFromFileName(mangaP.getMangaName())+".txt");
 
         if(!mangaP.stream().flatMap(cp -> cp.getChapter().stream()).anyMatch(Page::hasError)){
             try {
@@ -53,7 +54,7 @@ public class SaveRecords {
         .peek(c -> {
             main.deleteCharAt(main.length() - 1);
             main.append(c.getChapter().getNumber()).append(" \n");
-        }).forEach(c -> c.fillErrors(main, id_urls));
+        }).forEach(c -> chapter(c, main, id_urls));
 
         main.append("\n\n------------------------------------------\n\n").append(id_urls);
 
@@ -63,11 +64,15 @@ public class SaveRecords {
         
     }
 
-    private void chapter(ChapterPresenter presenter) {
-        if(chapterService.getDirectoryCreateFailedError() != null){
-            main.append(chapterService.getDirectoryCreateFailedError());
+    private void chapter(ChapterPresenter presenter, StringBuilder main, StringBuilder id_urls) {
+        /** TODO
+         * if(presenter.getDirectoryCreateFailedError() != null){
+            main.append(presenter.getDirectoryCreateFailedError());
             return;
         }
+         */
+        
+        Chapter chapter = presenter.getChapter();
         main
         .append("id: ")
         .append(chapter.chapterId)

@@ -16,7 +16,7 @@ public class Chapter extends ChapterBase<Page> {
     private volatile State state;
     private boolean modified;
     
-    private final Path savePath;
+    private Path savePath0;
     public final int chapterId;
     private String title2;  
     
@@ -29,8 +29,6 @@ public class Chapter extends ChapterBase<Page> {
         this.title2 = title;
         this.chapterId = chapterId;
         this.state = state;
- 
-        savePath = generateChapterSavePath();
     }
     
     private String chapterName;
@@ -50,16 +48,9 @@ public class Chapter extends ChapterBase<Page> {
      * @param title2
      * @return
      */
-    String getChapterName0()  {
+    private String getChapterName0()  {
         return StringUtils.doubleToString(number)+
                 ((title2 == null || title2.trim().isEmpty() || title2.trim().equals("null"))? "": " "+title2);
-    }
-    
-    Path generateChapterSavePath(){
-        return DOWNLOAD_DIR.resolve(String.valueOf(mangaId)).resolve(String.valueOf(chapterId));
-    }
-    public static Path generateChapterSavePath(int manga_id, int chapter_id){
-        return DOWNLOAD_DIR.resolve(String.valueOf(manga_id)).resolve(String.valueOf(chapter_id));
     }
     boolean isModified() {
         return modified;
@@ -70,8 +61,12 @@ public class Chapter extends ChapterBase<Page> {
     void setState(State state) {
         this.state = state;
     }
-    Path getSavePath() {
-        return savePath;
+    public Path getSavePath() {
+        if(savePath0 != null)
+            return savePath0;
+        synchronized (this) {
+            return savePath0 = generateChapterSavePath(mangaId, chapterId);
+        }
     }
     int getChapterId() {
         return chapterId;
@@ -82,6 +77,7 @@ public class Chapter extends ChapterBase<Page> {
     }
     void setTitle(String title) {
         Objects.requireNonNull(title, "title2 cannot be null");
+        
         if(title.trim().isEmpty())
            throw new IllegalArgumentException("title2 cannot be empty string");
         if(!Objects.equals(this.title2, title))
@@ -111,5 +107,8 @@ public class Chapter extends ChapterBase<Page> {
     }
     boolean isCompleted() {
         return getState() == State.SUCCEEDED;
+    }
+    public static Path generateChapterSavePath(int manga_id, int chapter_id) {
+        return DOWNLOAD_DIR.resolve(String.valueOf(manga_id)).resolve(String.valueOf(chapter_id));
     }
 }

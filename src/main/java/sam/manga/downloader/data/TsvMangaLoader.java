@@ -4,39 +4,22 @@ import static sam.manga.newsamrock.mangas.MangasMeta.MANGA_ID;
 import static sam.manga.newsamrock.mangas.MangasMeta.MANGA_NAME;
 
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
-import sam.config.MyConfig;
 import sam.manga.downloader.manga.Manga;
 import sam.manga.downloader.scrapper.Scrapper;
 import sam.tsv.Row;
 import sam.tsv.Tsv;
 
-class TsvMangaLoader {
-    public static List<Manga> load() throws IOException {
-        Path p1 = Paths.get(MyConfig.NEW_MANGAS_TSV_FILE);
-        Path p2 = Paths.get(MyConfig.UPDATED_MANGAS_TSV_FILE);
-
-        if(Files.exists(p1) && Files.exists(p2))
-            return new TsvMangaLoader(p1, p2)._load();
-        if(Files.exists(p1))
-            return new TsvMangaLoader(p1)._load();
-        if(Files.exists(p2))
-            return new TsvMangaLoader(p2)._load();
-
-        return null;
-    }
-
+public class TsvMangaLoader {
     private final Path[] paths;
 
-    private TsvMangaLoader(Path...ps) {
+    public TsvMangaLoader(Path...ps) {
         this.paths = ps;
     }
-    private List<Manga> _load() throws IOException {
+    public List<Manga> load() throws IOException {
         List<Manga> mangas = new ArrayList<>();
         
         for (Path path : paths) 

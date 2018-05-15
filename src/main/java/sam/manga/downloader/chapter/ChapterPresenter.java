@@ -174,4 +174,7 @@ public class ChapterPresenter {
     public void addListener(ChapterPresenterListener t) {
         listeners.addListener(t);
     }
+    public String getChapterName() {
+        return chapter.getChapterName();
+    }
 }

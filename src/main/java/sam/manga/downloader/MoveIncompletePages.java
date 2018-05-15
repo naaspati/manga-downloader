@@ -14,6 +14,7 @@ import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -48,7 +49,6 @@ import javafx.stage.DirectoryChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
-import sam.collection.UnmodifiableArray;
 import sam.config.Session;
 import sam.console.ANSI;
 import sam.manga.downloader.manga.MangaPresenter;
@@ -56,8 +56,7 @@ import sam.myutils.MyUtils;
 
 class MoveIncompletePages {
 
-    public MoveIncompletePages() {
-        UnmodifiableArray<MangaPresenter> mangas = App.getMangasMangaPresenter();
+    public MoveIncompletePages(List<MangaPresenter> mangas) {
         File initialFile;
         
         if(Session.has("moveIncompletePages"))

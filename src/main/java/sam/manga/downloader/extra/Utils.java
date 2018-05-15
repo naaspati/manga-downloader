@@ -32,7 +32,7 @@ import javafx.stage.Stage;
 import sam.fileutils.FilesUtils;
 import sam.fx.alert.FxAlert;
 import sam.manga.downloader.scrapper.Scrapper;
-import sam.weak.WeakKeep;
+import sam.weak.LazyAndWeak;
 
 public final class Utils {
     private Utils() {}
@@ -141,7 +141,7 @@ public final class Utils {
         return ClassLoader.getSystemResourceAsStream("imgs/"+imageName);
     }
 
-    private static final WeakKeep<FXMLLoader> fxkeep = new WeakKeep<>(FXMLLoader::new);
+    private static final LazyAndWeak<FXMLLoader> fxkeep = new LazyAndWeak<>(FXMLLoader::new);
     public static void fxml(String filename, Object root, Object controller) {
         try {
             FXMLLoader fx = fxkeep.get();
