@@ -12,7 +12,6 @@ import javafx.beans.property.ReadOnlyBooleanWrapper;
 import javafx.beans.property.ReadOnlyIntegerProperty;
 import javafx.beans.property.ReadOnlyIntegerWrapper;
 import javafx.beans.property.ReadOnlyObjectProperty;
-import javafx.beans.property.SimpleIntegerProperty;
 import javafx.concurrent.Worker.State;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -24,11 +23,8 @@ import javafx.scene.effect.Glow;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
-import sam.collection.UnmodifiableArray;
 import sam.fx.helpers.FxLabel;
 import sam.manga.downloader.chapter.ChapterPresenter;
-import sam.manga.downloader.chapter.ChapterPresenterListener;
-import sam.manga.downloader.data.DataManager;
 import sam.manga.downloader.extra.SaveRecords;
 import sam.manga.downloader.extra.Utils;
 import sam.manga.downloader.manga.Manga;
@@ -37,42 +33,31 @@ import sam.manga.downloader.manga.MangaPresenterListener;
 import sam.weak.WeakStore;
 
 public class WestPane extends BorderPane {
-    private static volatile WestPane instance;
-
-    private static final WeakStore<StringBuilder> builders = new WeakStore<>(StringBuilder::new);
+    private final WeakStore<StringBuilder> builders = new WeakStore<>(StringBuilder::new);
 
     @FXML private Text mangaCount;
-    @FXML private Text chapterCount;
-    @FXML private Text pageCount;
-    @FXML private Text selectedCount;
-    @FXML private Text queuedCount;
-    @FXML private Text completedCount;
-    @FXML private Text failedCount;
-    @FXML private Text remainingCount;
+    @FXML private CountText chapterCount;
+    @FXML private CountText pageCount;
+    @FXML private CountText selectedCount;
+    @FXML private CountText queuedCount;
+    @FXML private CountText completedCount;
+    @FXML private CountText failedCount;
+    @FXML private CountText remainingCount;
+    
     @FXML private ListView<MangaPresenter> listView;
     @FXML private Button downloadButton;
-
-    private final int[] chapterCounts;
-    private final int[] pageCounts;
-    private final int[] selectedCounts;
-    private final int[] queuedCounts;
-    private final int[] completedCounts;
-    private final int[] failedCounts;
-    private final int[] remainingCounts;
     
     private final ReadOnlyIntegerWrapper failedCountPropery = new ReadOnlyIntegerWrapper();
+    private MangaButton[] mangaButtons;
 
-    private CenterView centerView;
-    private final ReadOnlyBooleanWrapper downloadIsActive = new ReadOnlyBooleanWrapper(null, "download_is_active",
-            false);
+    // private CenterView centerView;
+    private final ReadOnlyBooleanWrapper downloadIsActive = new ReadOnlyBooleanWrapper(null, "download_is_active", false);
     private final ReadOnlyObjectProperty<MangaPresenter> currentManga;
     private MangaPresenter[] mangaPresenters;
 
     public WestPane() {
         Utils.fxml(this);
         Utils.stylesheet(this);
-        downloadButton.setOnAction(this::startDownload);
-
         currentManga = listView.getSelectionModel().selectedItemProperty();
     }
     
@@ -80,19 +65,19 @@ public class WestPane extends BorderPane {
         int size = mangas.size();
         mangaPresenters = new MangaPresenter[size];
         int n = 0;
-        for (Manga m : mangas) {
-            MangaPresenter mp = new MangaPresenter(m, n++);
-            mp.addListener(listeners);
-            mangaPresenters[n++] = mp;
-        }
+        
+        for (Manga m : mangas) 
+            mangaPresenters[n] = new MangaPresenter(m, n++, mangaListener);
+        
+        mangaButtons = new MangaButton[size];
 
-        chapterCounts = new int[size];
-        pageCounts = new int[size];
-        selectedCounts = new int[size];
-        queuedCounts = new int[size];
-        completedCounts = new int[size];
-        failedCounts = new int[size];
-        remainingCounts = new int[size];
+        chapterCount.setSize(size);
+        pageCount.setSize(size);
+        selectedCount.setSize(size);
+        queuedCount.setSize(size);
+        completedCount.setSize(size);
+        failedCount.setSize(size);
+        remainingCount.setSize(size);
 
         mangaCount.setText(String.valueOf(mangaPresenters.length));
     }
@@ -105,27 +90,23 @@ public class WestPane extends BorderPane {
         return downloadIsActive.getReadOnlyProperty();
     }
 
-    private final MangaPresenterListener listeners = new MangaPresenterListener() {
+    private final MangaPresenterListener mangaListener = new MangaPresenterListener() {
+        private void update(int index) {
+            if(mangaButtons[index] != null)
+                mangaButtons[index].updateCount();
+        }
+        
         void updateAll(MangaPresenter manga) {
             int index = manga.getIndex();
 
-            chapterCounts[index] = manga.getChaptersCount();
-            pageCounts[index] = manga.getPageCount();
-            selectedCounts[index] = manga.getSelectedCount();
-            queuedCounts[index] = manga.getQueuedCount();
-            completedCounts[index] = manga.getCompletedCount();
-            failedCounts[index] = manga.getFailedCount();
-            remainingCounts[index] = manga.getRemainingCount();
-
-            set(chapterCount, chapterCounts);
-            set(pageCount, pageCounts);
-            set(selectedCount, selectedCounts);
-            set(queuedCount, queuedCounts);
-            set(completedCount, completedCounts);
-            set(failedCount, failedCounts);
-            set(remainingCount, remainingCounts);
+            chapterCount.set(index,  manga.getChaptersCount());
+            pageCount.set(index,  manga.getPageCount());
+            selectedCount.set(index,  manga.getSelectedCount());
+            queuedCount.set(index,  manga.getQueuedCount());
+            completedCount.set(index,  manga.getCompletedCount());
+            failedCount.set(index,  manga.getFailedCount());
+            remainingCount.set(index,  manga.getRemainingCount());
         }
-
         @Override
         public void mangaEvent(MangaPresenter manga, MangaEvent event) {
             int index = manga.getIndex();
@@ -135,14 +116,11 @@ public class WestPane extends BorderPane {
                     updateAll(manga);
                     break;
                 case CHAPTERS_DATA:
-                    chapterCounts[index] = manga.getChaptersCount();
-                    pageCounts[index] = manga.getPageCount();
-                    set(chapterCount, chapterCounts);
-                    set(pageCount, pageCounts);
+                    chapterCount.set(index, manga.getChaptersCount());
+                    pageCount.set(index, manga.getPageCount());
                     break;                    
-                default:
-                    break;
             }
+            update(index);
         }
 
         @Override
@@ -153,9 +131,9 @@ public class WestPane extends BorderPane {
 //TODO                failedCounts
                 //TODO
             }
-                
-
-            switch (newValue) {
+            
+            /**
+             *             switch (newValue) {
                 case CANCELLED:
                     setFailed(manga, chapter);
                     break;
@@ -198,25 +176,23 @@ public class WestPane extends BorderPane {
                     break;
 
             }
+             */
+            
+            update(index);
         }
 
         @Override
         public void chapterSelectionChange(MangaPresenter manga, ChapterPresenter chapter, boolean newValue) {
+         
+            //TODO
+            // update(index);
         }
     };
     
     public ReadOnlyIntegerProperty failedCountPropery() {
         return failedCountPropery.getReadOnlyProperty();
     }
-    private void set(Text t, int[] data) {
-        if(data == failedCounts) {
-            int n = Utils.sum(data);
-            failedCountPropery.set(n);
-            t.setText(String.valueOf(n));
-        } else
-            t.setText(String.valueOf(Utils.sum(data)));
-    }
-
+    @FXML
     public void startDownload(ActionEvent event) {
         downloadIsActive.set(true);
         forEach(MangaPresenter::startDownload);
@@ -229,11 +205,12 @@ public class WestPane extends BorderPane {
 
     private static final String[] removeClassNameArray = { "running", "completed", "queued", "failed" };
 
-    private class MangaButton extends ListCell<MangaPresenter> implements MangaPresenterListener {
+    private class MangaButton extends ListCell<MangaPresenter> {
         private final Label mangaName = FxLabel.label(null, "name-text");
         private final Label counts = FxLabel.label(null, "count-text");
         private final VBox box = new VBox(mangaName, counts);
         private MangaPresenter manga;
+        
         {
             setClass(this, "manga-button");
             setClass(box, "vbox");
@@ -243,6 +220,7 @@ public class WestPane extends BorderPane {
         }
 
         private void addClass(String className) {
+            //TODO
             if (!box.getStyleClass().contains(className)) {
                 box.getStyleClass().removeAll(removeClassNameArray);
                 box.getStyleClass().add(className);
@@ -262,63 +240,51 @@ public class WestPane extends BorderPane {
             if (item == null || empty) {
                 mangaName.setText(null);
                 counts.setText(null);
+                if(manga != null)
+                mangaButtons[manga.getIndex()] = null;
                 manga = null;
                 setGraphic(null);
             } else {
                 this.manga = item;
                 mangaName.setText(item.getMangaName());
-                item.setUpdateListener(this);
+                mangaButtons[item.getIndex()] = this; 
                 setGraphic(box);
                 updateCount();
             }
         }
-
-        @Override
-        public void updated(MangaPresenter manga, MangaPresenter.Kind kind) {
-            if (this.manga != null)
-                updateCount();
-
-            listeners.updated(manga, kind);
-        }
-
+        int index;
+        StringBuilder sb;
+        
         private void updateCount() {
-            StringBuilder sb = builders.poll();
-
-            int n = manga.getCompletedCount();
-            if (n != 0)
-                sb.append("C: ").append(n).append(" | ");
-            n = manga.getFailedCount();
-            if (n != 0)
-                sb.append("F: ").append(n).append(" | ");
-            n = manga.getRemainingCount();
-            if (n != 0)
-                sb.append("R: ").append(n).append(" | ");
-            n = manga.getQueuedCount();
-            if (n != 0)
-                sb.append("Q: ").append(n).append(" | ");
-            n = manga.getSelectedCount();
-            if (n != 0)
-                sb.append("S: ").append(n).append(" | ");
-
-            sb.append("T: ").append(manga.chaptersCount());
+            sb = builders.poll();
+            index = manga.getIndex();
+            
+            set(completedCount, "C: ");
+            set(failedCount, "F: ");
+            set(remainingCount, "R: ");
+            set(queuedCount, "Q: ");
+            set(selectedCount, "S: ");
+            
+            sb.append("T: ").append(chapterCount.get(index));
             counts.setText(sb.toString());
 
             sb.setLength(0);
             builders.add(sb);
+            sb = null;
+        }
+        public void set(CountText c, String s) {
+            sb.append(s).append(c.get(index)).append(" | ");
         }
     }
     public ReadOnlyObjectProperty<MangaPresenter> currentMangaProperty() {
         return currentManga;
     }
-
     public void stop() {
-        if (isDownloadIsActive())
+        if (downloadIsActive.get())
             forEach(MangaPresenter::cancelAllDownload);
-
-        forEach(m -> new SaveRecords(m)); // TODO
+        new SaveRecords(getMangas());
     }
-
-    public List<MangaPresenter> mangaPresenters() {
+    public List<MangaPresenter> getMangas() {
         return Collections.unmodifiableList(listView.getItems());
     }
 }

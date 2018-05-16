@@ -12,6 +12,7 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Text?>
+<?import sam.manga.downloader.CountText?>
 <?scenebuilder-stylesheet westPane.css?>
 
 <fx:root xmlns:fx="http://javafx.com/fxml" type="BorderPane" fx:id="westPane">
@@ -48,24 +49,24 @@
 								<String fx:value="counts" />
 							</styleClass>
 						</Text>
-						<Text fx:id="chapterCount" text="--" GridPane.rowIndex="2" GridPane.columnIndex="1"> 
+						<CountText fx:id="chapterCount" text="--" GridPane.rowIndex="2" GridPane.columnIndex="1"> 
 							<styleClass>
 								<String fx:value="chapter-count" />
 								<String fx:value="counts" />
 							</styleClass>
-						</Text>
+						</CountText>
 						<Text text="Page Count" GridPane.rowIndex="3" GridPane.columnIndex="0"> 
 							<styleClass>
 								<String fx:value="page-count" />
 								<String fx:value="counts" />
 							</styleClass>
 						</Text>
-						<Text fx:id="pageCount" text="--" GridPane.rowIndex="3" GridPane.columnIndex="1"> 
+						<CountText fx:id="pageCount" text="--" GridPane.rowIndex="3" GridPane.columnIndex="1"> 
 							<styleClass>
 								<String fx:value="page-count" />
 								<String fx:value="counts" />
 							</styleClass>
-						</Text>
+						</CountText>
 						<Text GridPane.rowIndex="4" GridPane.columnIndex="0"> 
 							<styleClass>
 								<String fx:value="separator" />
@@ -86,60 +87,60 @@
 								<String fx:value="counts" />
 							</styleClass>
 						</Text>
-						<Text fx:id="selectedCount" text="--" GridPane.rowIndex="6" GridPane.columnIndex="1"> 
+						<CountText fx:id="selectedCount" text="--" GridPane.rowIndex="6" GridPane.columnIndex="1"> 
 							<styleClass>
 								<String fx:value="selected-count" />
 								<String fx:value="counts" />
 							</styleClass>
-						</Text>
+						</CountText>
 						<Text text="Queued Count" GridPane.rowIndex="7" GridPane.columnIndex="0"> 
 							<styleClass>
 								<String fx:value="queued-count" />
 								<String fx:value="counts" />
 							</styleClass>
 						</Text>
-						<Text fx:id="queuedCount" text="--" GridPane.rowIndex="7" GridPane.columnIndex="1"> 
+						<CountText fx:id="queuedCount" text="--" GridPane.rowIndex="7" GridPane.columnIndex="1"> 
 							<styleClass>
 								<String fx:value="queued-count" />
 								<String fx:value="counts" />
 							</styleClass>
-						</Text>
+						</CountText>
 						<Text text="Completed Count" GridPane.rowIndex="8" GridPane.columnIndex="0"> 
 							<styleClass>
 								<String fx:value="completed-count" />
 								<String fx:value="counts" />
 							</styleClass>
 						</Text>
-						<Text fx:id="completedCount" text="--" GridPane.rowIndex="8" GridPane.columnIndex="1"> 
+						<CountText fx:id="completedCount" text="--" GridPane.rowIndex="8" GridPane.columnIndex="1"> 
 							<styleClass>
 								<String fx:value="completed-count" />
 								<String fx:value="counts" />
 							</styleClass>
-						</Text>
+						</CountText>
 						<Text text="Failed Count" GridPane.rowIndex="9" GridPane.columnIndex="0"> 
 							<styleClass>
 								<String fx:value="failed-count" />
 								<String fx:value="counts" />
 							</styleClass>
 						</Text>
-						<Text fx:id="failedCount" text="--" GridPane.rowIndex="9" GridPane.columnIndex="1"> 
+						<CountText fx:id="failedCount" text="--" GridPane.rowIndex="9" GridPane.columnIndex="1"> 
 							<styleClass>
 								<String fx:value="failed-count" />
 								<String fx:value="counts" />
 							</styleClass>
-						</Text>
+						</CountText>
 						<Text text="Remaining Count" GridPane.rowIndex="10" GridPane.columnIndex="0"> 
 							<styleClass>
 								<String fx:value="remaining-count" />
 								<String fx:value="counts" />
 							</styleClass>
 						</Text>
-						<Text fx:id="remainingCount" text="--" GridPane.rowIndex="10" GridPane.columnIndex="1"> 
+						<CountText fx:id="remainingCount" text="--" GridPane.rowIndex="10" GridPane.columnIndex="1"> 
 							<styleClass>
 								<String fx:value="remaining-count" />
 								<String fx:value="counts" />
 							</styleClass>
-						</Text>
+						</CountText>
 					</children>
 				</GridPane>
 				<ListView fx:id="listView"/> 
@@ -147,7 +148,7 @@
 		</VBox>
 	</center>
 	<bottom>
-		<Button fx:id="downloadButton" text="Start Download" disable="true"> 
+		<Button fx:id="downloadButton" text="Start Download" disable="true" onAction="#startDownload"> 
 			<maxWidth><Double fx:constant="MAX_VALUE" /></maxWidth>
 			<alignment><Pos fx:constant="CENTER" /></alignment>
 		</Button>

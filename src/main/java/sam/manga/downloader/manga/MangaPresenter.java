@@ -36,10 +36,11 @@ public class MangaPresenter {
     private final Manga manga;
     private final Listeners<MangaPresenterListener> listeners = new Listeners<>(MangaPresenterListener.class);
 
-    public MangaPresenter(Manga manga, int index) {
+    public MangaPresenter(Manga manga, int index, MangaPresenterListener listener) {
         this.manga = manga;
         this.index = index;
         updateChapters();
+        listeners.addListener(listener);
     }
     private void updateChapters() {
         int size = manga.chaptersCount();

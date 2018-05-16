@@ -73,7 +73,7 @@ public class Provider {
         if(toolsMenu0 != null)
             return toolsMenu0 ;
 
-        return  toolsMenu0 = new ToolsMenu(westpane().mangaPresenters(), westpane().downloadIsActiveProperty(), this::createMangarockDatabase); 
+        return  toolsMenu0 = new ToolsMenu(westpane().getMangas(), westpane().downloadIsActiveProperty(), this::createMangarockDatabase); 
     }
 
     private void createMangarockDatabase(boolean moveFolders) {

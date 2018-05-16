@@ -8,6 +8,7 @@ import javafx.scene.effect.Glow
 import javafx.scene.control.ListView
 import javafx.scene.control.Button
 import javafx.geometry.Pos
+import sam.manga.downloader.CountText
 
 dynamic component CountersViewBox styledwith 'westPane.css' {
 	BorderPane id westPane {
@@ -43,7 +44,7 @@ dynamic component CountersViewBox styledwith 'westPane.css' {
 							static rowIndex : 2,
 							static columnIndex : 0
 						},
-						Text id chapterCount {
+						CountText id chapterCount {
 							styleClass : ['chapter-count', 'counts'],
 							text : "--",
 							static rowIndex : 2,
@@ -55,7 +56,7 @@ dynamic component CountersViewBox styledwith 'westPane.css' {
 							static rowIndex : 3,
 							static columnIndex : 0
 						},
-						Text id pageCount {
+						CountText id pageCount {
 							styleClass : ['page-count', 'counts'],
 							text : "--",
 							static rowIndex : 3,
@@ -79,7 +80,7 @@ dynamic component CountersViewBox styledwith 'westPane.css' {
                             static rowIndex : 6,
                             static columnIndex : 0
                         },
-                        Text id selectedCount {
+                        CountText id selectedCount {
                             styleClass : ['selected-count', 'counts'],
                             text : "--",
                             static rowIndex : 6,
@@ -91,7 +92,7 @@ dynamic component CountersViewBox styledwith 'westPane.css' {
                             static rowIndex : 7,
                             static columnIndex : 0
                         },
-                        Text id queuedCount {
+                        CountText id queuedCount {
                             styleClass : ['queued-count', 'counts'],
                             text : "--",
                             static rowIndex : 7,
@@ -103,7 +104,7 @@ dynamic component CountersViewBox styledwith 'westPane.css' {
                             static rowIndex : 8,
                             static columnIndex : 0
                         },
-                        Text id completedCount {
+                        CountText id completedCount {
                             styleClass : ['completed-count', 'counts'],
                             text : "--",
                             static rowIndex : 8,
@@ -115,7 +116,7 @@ dynamic component CountersViewBox styledwith 'westPane.css' {
                             static rowIndex : 9,
                             static columnIndex : 0
                         },
-                        Text id failedCount {
+                        CountText id failedCount {
                             styleClass : ['failed-count', 'counts'],
                             text : "--",
                             static rowIndex : 9,
@@ -127,7 +128,7 @@ dynamic component CountersViewBox styledwith 'westPane.css' {
                             static rowIndex : 10,
                             static columnIndex : 0
                         },
-                        Text id remainingCount {
+                        CountText id remainingCount {
                             styleClass : ['remaining-count', 'counts'],
                             text : "--",
                             static rowIndex : 10,
@@ -142,7 +143,8 @@ dynamic component CountersViewBox styledwith 'westPane.css' {
 			    text : "Start Download",
 				maxWidth : const Double#MAX_VALUE,
 				alignment : const Pos#CENTER,
-				disable : true
+				disable : true,
+				onAction : controllermethod startDownload
 		}
 		
 	
